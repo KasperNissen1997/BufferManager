@@ -169,9 +169,17 @@ public class BufMgr implements GlobalConst {
 	/**
 	 * Gets the total number of unpinned buffer frames.
 	 */
+        /*
+         * @Author Sebastian
+         */
 	public int getNumUnpinned() {
-		
-		throw new UnsupportedOperationException("Not implemented");
+            int unpin_count = 0;
+            for (int i = 0; i < frametab.length; i++){
+                if(frametab[i].pincnt==0){
+                    unpin_count++;
+                }
+            }
+	return unpin_count;	
 	}
 
 } // public class BufMgr implements GlobalConst

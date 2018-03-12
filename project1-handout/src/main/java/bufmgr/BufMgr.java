@@ -127,6 +127,8 @@ public class BufMgr implements GlobalConst {
 	}
 
 	/**
+         * @author Kasper Nissen
+         * 
 	 * Unpins a disk page from the buffer pool, decreasing its pin count.
 	 * 
 	 * @param pageno
@@ -138,8 +140,23 @@ public class BufMgr implements GlobalConst {
 	 */
 	public void unpinPage(PageId pageno, boolean dirty) throws IllegalArgumentException {
 		
-		throw new UnsupportedOperationException("Not implemented");
-
+            if (!pagemap.containsKey(pageno.getPID()))
+            {
+                throw new IllegalArgumentException();
+            }
+            
+            FrameDesc desc = pagemap.get(pageno.getPID());
+            
+            if (desc.pincnt == 0)
+            {
+                throw new IllegalArgumentException();
+            }
+            
+            desc.pincnt--;
+            
+            if (dirty == UNPIN_DIRTY) {
+                desc.dirty = true;
+            }
 	}
 
 	/**

@@ -65,23 +65,23 @@ public class BufMgr implements GlobalConst {
 	 *             if all pages are pinned (i.e. pool exceeded)
 	 */
 	public PageId newPage(Page firstpg, int run_size) {
-		// allocate the run
-		PageId firstid = Minibase.DiskManager.allocate_page(run_size);
-		
-		// try to pin the first page
-		try {pinPage(firstid, firstpg, PIN_MEMCPY);} 
-		catch (RuntimeException exc) {
-		      // roll back because pin failed
-		      for (int i = 0; i < run_size; i++) {
-		        firstid.pid += 1;
-		        Minibase.DiskManager.deallocate_page(firstid);
-		      }
-		      // re-throw the exception
-		      throw exc;
-		}
-		// notify the replacer and return the first new page id
-		replacer.newPage(pagemap.get(firstid.pid));
-		return firstid;
+            // allocate the run
+            PageId firstid = Minibase.DiskManager.allocate_page(run_size);
+
+            // try to pin the first page
+            try {pinPage(firstid, firstpg, PIN_MEMCPY);} 
+            catch (RuntimeException exc) {
+                  // roll back because pin failed
+                  for (int i = 0; i < run_size; i++) {
+                    firstid.pid += 1;
+                    Minibase.DiskManager.deallocate_page(firstid);
+                  }
+                  // re-throw the exception
+                  throw exc;
+            }
+            // notify the replacer and return the first new page id
+            replacer.newPage(pagemap.get(firstid.pid));
+            return firstid;
 	}
 
 	/**
@@ -160,10 +160,12 @@ public class BufMgr implements GlobalConst {
 	}
 
 	/**
+         * @author Kasper Nissen
+         * 
 	 * Gets the total number of buffer frames.
 	 */
 	public int getNumBuffers() {
-		throw new UnsupportedOperationException("Not implemented");
+		return frametab.length;
 	}
 
 	/**

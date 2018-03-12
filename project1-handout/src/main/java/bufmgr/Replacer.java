@@ -16,7 +16,7 @@ abstract class Replacer implements GlobalConst {
    * Constructs the replacer, given the buffer manager.
    */
   protected Replacer(BufMgr bufmgr) {
-    
+    frametab = bufmgr.frametab;
   }
 
   /**

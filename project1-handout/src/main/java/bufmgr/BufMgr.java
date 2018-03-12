@@ -135,9 +135,32 @@ public class BufMgr implements GlobalConst {
 	 *             if all pages are pinned (i.e. pool exceeded)
 	 */
 	public void pinPage(PageId pageno, Page page, boolean skipRead) {
-		
-		throw new UnsupportedOperationException("Not implemented");
-
+            
+            if (pagemap.containsKey(pageno.getPID()))
+            {
+                if (skipRead == PIN_MEMCPY)
+                    throw new IllegalArgumentException();
+                
+                FrameDesc desc = pagemap.get(pageno.getPID());
+                desc.pincnt++;
+            } else
+            {
+                int victim = replacer.pickVictim();
+                
+                if (victim == -1)
+                    throw new IllegalStateException();
+                
+                flushPage(frametab[victim].pageno);
+                
+                if (skipRead == PIN_DISKIO)
+                {
+                    Minibase.DiskManager.read_page(pageno, page);
+                }
+                
+                bufpool[victim] = page;
+                frametab[victim] = new FrameDesc(victim);
+                frametab[victim].pageno = pageno;
+            }
 	}
 
 	/**
@@ -175,8 +198,7 @@ public class BufMgr implements GlobalConst {
 
 	/**
 	 * Immediately writes a page in the buffer pool to disk, if dirty.
-	 */
-        /*
+	 *
          * @Author Sebastian
          */
 	public void flushPage(PageId pageno) {

@@ -40,7 +40,7 @@ public class Clock extends Replacer{
          * replaced unless its state is also 0, if state is not 0, it is 
          * decremented
          * The algorithm uses count to see if an entire cycle of the frametab 
-         * has been looked through, and if it has it can be usemed that no 
+         * has been looked through, and if it has it can be asumed that no 
          * elligable frame is to be found 
          */
 	public int pickVictim() {

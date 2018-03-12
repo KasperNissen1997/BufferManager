@@ -150,7 +150,13 @@ public class BufMgr implements GlobalConst {
                 if (victim == -1)
                     throw new IllegalStateException();
                 
-                flushPage(frametab[victim].pageno);
+                // if (frametab[victim].pageno != null) 
+                // {
+                    flushPage(frametab[victim].pageno);
+                // }
+                
+                
+                pagemap.remove(frametab[victim].pageno.getPID());
                 
                 if (skipRead == PIN_DISKIO)
                 {
@@ -160,6 +166,9 @@ public class BufMgr implements GlobalConst {
                 bufpool[victim] = page;
                 frametab[victim] = new FrameDesc(victim);
                 frametab[victim].pageno = pageno;
+                frametab[victim].pincnt++;
+                
+                pagemap.put(pageno.getPID(), frametab[victim]);
             }
 	}
 
@@ -203,6 +212,10 @@ public class BufMgr implements GlobalConst {
          */
 	public void flushPage(PageId pageno) {
             FrameDesc fdesc = pagemap.get(pageno.pid);
+            
+            if (fdesc == null)
+                return;
+            
             if (fdesc.dirty){
                 Minibase.DiskManager.write_page(pageno, bufpool[fdesc.index]);
             }

@@ -102,7 +102,7 @@ public class BufMgr implements GlobalConst {
                 if(fdesc.pincnt>0){
                     throw new IllegalArgumentException();
                 }
-                pagemap.remove(pageno);
+                pagemap.remove(pageno.pid);
                 bufpool[fdesc.index] = new Page();
                 frametab[fdesc.index] = new FrameDesc(fdesc.index);
             }

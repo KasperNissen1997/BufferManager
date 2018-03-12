@@ -54,7 +54,7 @@ public class Clock extends Replacer{
                         }
                     }
                     count++;
-                    current= (current+1) % (frametab.length - 1);
+                    current= (current+1) % (frametab.length);
                 }
 		return -1;
 	}

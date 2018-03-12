@@ -94,7 +94,16 @@ public class BufMgr implements GlobalConst {
 	 *             if the page is pinned
 	 */
 	public void freePage(PageId pageno) throws IllegalArgumentException {
-		throw new UnsupportedOperationException("Not implemented");
+            FrameDesc fdesc = pagemap.get(pageno.pid);
+            if( fdesc != null){
+                if(fdesc.pincnt>0){
+                    throw new IllegalArgumentException();
+                }
+                pagemap.remove(pageno);
+                bufpool[fdesc.index] = new Page();
+                frametab[fdesc.index] = new FrameDesc(fdesc.index);
+            }
+            Minibase.DiskManager.deallocate_page(pageno);
 	}
 
 	/**
@@ -162,6 +171,9 @@ public class BufMgr implements GlobalConst {
 	/**
 	 * Immediately writes a page in the buffer pool to disk, if dirty.
 	 */
+        /*
+         * @Author Sebastian
+         */
 	public void flushPage(PageId pageno) {
             FrameDesc fdesc = pagemap.get(pageno.pid);
             if (fdesc.dirty){
@@ -172,6 +184,9 @@ public class BufMgr implements GlobalConst {
 	/**
 	 * Immediately writes all dirty pages in the buffer pool to disk.
 	 */
+        /*
+         * @Author Sebastian
+         */
 	public void flushAllPages() {
             for(int i = 0; i < frametab.length; i++){
                 flushPage(frametab[i].pageno);

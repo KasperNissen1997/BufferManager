@@ -93,6 +93,9 @@ public class BufMgr implements GlobalConst {
 	 * @throws IllegalArgumentException
 	 *             if the page is pinned
 	 */
+        /*
+         * @Author Sebastian
+         */
 	public void freePage(PageId pageno) throws IllegalArgumentException {
             FrameDesc fdesc = pagemap.get(pageno.pid);
             if( fdesc != null){

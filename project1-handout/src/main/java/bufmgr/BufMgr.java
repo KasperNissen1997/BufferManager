@@ -110,6 +110,8 @@ public class BufMgr implements GlobalConst {
 	}
 
 	/**
+         * @author Kasper Nissen
+         * 
 	 * Pins a disk page into the buffer pool. If the page is already pinned,
 	 * this simply increments the pin count. Otherwise, this selects another
 	 * page in the pool to replace, flushing the replaced page to disk if 

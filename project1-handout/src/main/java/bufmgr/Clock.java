@@ -3,7 +3,12 @@ package bufmgr;
 public class Clock extends Replacer{
         
         private int current;
-        
+        /**
+         * 0 = available
+         * 1 = pinned
+         * 2 = prepinned
+         * @param bufmgr 
+         */
 	protected Clock(BufMgr bufmgr) {
 		super(bufmgr);
 		current = 0;
@@ -17,19 +22,21 @@ public class Clock extends Replacer{
 
 	@Override
 	public void freePage(FrameDesc fdesc) {
-		// TODO Auto-generated method stub
+		fdesc.state=0;
 		
 	}
 
 	@Override
 	public void pinPage(FrameDesc fdesc) {
-		// TODO Auto-generated method stub
+		fdesc.state=1;
 		
 	}
 
 	@Override
 	public void unpinPage(FrameDesc fdesc) {
-		// TODO Auto-generated method stub
+		if(fdesc.pincnt == 0){
+                    fdesc.state=2;
+                }
 		
 	}
 
@@ -44,19 +51,21 @@ public class Clock extends Replacer{
          * elligable frame is to be found 
          */
 	public int pickVictim() {
-            int count = 0;
-		while(count<frametab.length){
-                    if(frametab[current].pincnt == 0){
-                        if(frametab[current].state == 0){
-                            return current;
-                        } else {
-                           frametab[current].state--; 
-                        }
-                    }
-                    count++;
-                    current= (current+1) % (frametab.length);
+            int i = 0;
+            int findvictim = 1;
+            while (findvictim == 1){
+                current = (current + 1) % frametab.length;
+                if (i>2*frametab.length){
+                    return -1;
                 }
-		return -1;
+                if (frametab[current].state == 2)
+                    frametab[current].state = 1;
+                else if (frametab[current].state == 0){
+                    findvictim = 0;
+                }
+                i++;
+            }
+            return current;
 	}
 
 }

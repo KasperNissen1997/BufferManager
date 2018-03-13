@@ -104,6 +104,7 @@ public class BufMgr implements GlobalConst {
                 }
                 fdesc.pageno.pid = INVALID_PAGEID;
                 pagemap.remove(pageno.pid);
+                replacer.freePage(fdesc);
                 
             }
             Minibase.DiskManager.deallocate_page(pageno);
@@ -144,6 +145,7 @@ public class BufMgr implements GlobalConst {
                 FrameDesc desc = pagemap.get(pageno.getPID());
                 page.setPage(bufpool[desc.index]);
                 desc.pincnt++;
+                replacer.pinPage(desc);
                 
             } else
             {
@@ -173,8 +175,8 @@ public class BufMgr implements GlobalConst {
                 page.setPage(bufpool[victim]);
                 pagemap.put(pageno.getPID(), frametab[victim]);
                 fdesc.pageno.pid = pageno.pid;
-                fdesc.state++;
                 System.out.println("state is " + fdesc.state);
+                replacer.pinPage(fdesc);
                 
             }
 	}
@@ -210,6 +212,7 @@ public class BufMgr implements GlobalConst {
             if (dirty == UNPIN_DIRTY) {
                 desc.dirty = true;
             }
+            replacer.unpinPage(desc);
 	}
 
 	/**

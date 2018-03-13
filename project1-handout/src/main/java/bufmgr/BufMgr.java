@@ -139,8 +139,15 @@ public class BufMgr implements GlobalConst {
             System.out.println("pid is " + pageno.pid);
             if (pagemap.containsKey(pageno.getPID()))
             {
-                if (skipRead == PIN_MEMCPY)
-                    throw new IllegalArgumentException();
+                if (skipRead == PIN_MEMCPY){
+                    FrameDesc fdesc = pagemap.get(pageno.pid);
+                    System.out.println("dirty is " + fdesc.dirty);
+                    System.out.println("state is " + fdesc.state);
+                    System.out.println("pin is " + fdesc.pincnt);
+                    System.out.println("pid is " + fdesc.pageno.pid);
+                    System.out.println("index is " + fdesc.index);
+                    throw new IllegalArgumentException("dirty is " + fdesc.dirty + "\n" + "state is " + fdesc.state + "\n" + "pin is " + fdesc.pincnt + "\n" + "pid is " + fdesc.pageno.pid + "\n" + "index is " + fdesc.index + "\n" + "pageno id is " + pageno.pid + "\n");
+                }
                 
                 FrameDesc desc = pagemap.get(pageno.getPID());
                 page.setPage(bufpool[desc.index]);
@@ -175,7 +182,7 @@ public class BufMgr implements GlobalConst {
                 page.setPage(bufpool[victim]);
                 pagemap.put(pageno.getPID(), frametab[victim]);
                 fdesc.pageno.pid = pageno.pid;
-                System.out.println("state is " + fdesc.state);
+                
                 replacer.pinPage(fdesc);
                 
             }

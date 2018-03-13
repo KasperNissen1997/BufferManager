@@ -59,7 +59,7 @@ public class Clock extends Replacer{
                     return -1;
                 }
                 if (frametab[current].state == 2)
-                    frametab[current].state = 1;
+                    frametab[current].state = 0;
                 else if (frametab[current].state == 0){
                     findvictim = 0;
                 }

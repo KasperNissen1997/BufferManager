@@ -136,57 +136,66 @@ public class BufMgr implements GlobalConst {
 	 *             if all pages are pinned (i.e. pool exceeded)
 	 */
 	public void pinPage(PageId pageno, Page page, boolean skipRead) {
-            System.out.println("pid is " + pageno.pid);
-            if (pagemap.containsKey(pageno.getPID()))
+            
+            // attempt to retrieve the FrameDesc from the pagemap
+            FrameDesc desc = pagemap.get(pageno.pid);
+            
+            // if succesfull
+            if (desc != null) 
             {
-                if (skipRead == PIN_MEMCPY){
-                    FrameDesc fdesc = pagemap.get(pageno.pid);
-                    System.out.println("dirty is " + fdesc.dirty);
-                    System.out.println("state is " + fdesc.state);
-                    System.out.println("pin is " + fdesc.pincnt);
-                    System.out.println("pid is " + fdesc.pageno.pid);
-                    System.out.println("index is " + fdesc.index);
-                    throw new IllegalArgumentException("dirty is " + fdesc.dirty + "\n" + "state is " + fdesc.state + "\n" + "pin is " + fdesc.pincnt + "\n" + "pid is " + fdesc.pageno.pid + "\n" + "index is " + fdesc.index + "\n" + "pageno id is " + pageno.pid + "\n");
-                }
+                if (skipRead == PIN_MEMCPY)
+                    throw new IllegalArgumentException("invalid argument, birch");
                 
-                FrameDesc desc = pagemap.get(pageno.getPID());
-                page.setPage(bufpool[desc.index]);
+                // pins the page
                 desc.pincnt++;
+                page.setPage(bufpool[desc.index]);
                 replacer.pinPage(desc);
-                
-            } else
+                return;
+            }
+            else
             {
+                // find the next page to replace
                 int victim = replacer.pickVictim();
                 
+                // if there is no replaceable pages
                 if (victim == -1)
                     throw new IllegalStateException();
                 
-                // if (frametab[victim].pageno != null) 
-                // {
-                FrameDesc fdesc = frametab[victim];
+                // replace the victim page with the new page
+                desc = frametab[victim];
                 
-                if (fdesc.pageno.pid != -1){
-                    flushPage(frametab[victim].pageno);  
-                    pagemap.remove(frametab[victim].pageno.getPID());
+                // if a valid page is found at the victim index // TODO
+                if (desc.pageno.pid != INVALID_PAGEID) 
+                {
+                    // remove the valid page from the pagemap
+                    pagemap.remove(desc.pageno.pid);
                     
+                    // if dirty
+                    if (desc.dirty) 
+                        // write the page to disk
+                        Minibase.DiskManager.write_page(desc.pageno, bufpool[victim]);
                 }
                 
-                if (skipRead == PIN_DISKIO)
+                // if skipRead == PIN_MEMCPY
+                if (skipRead) 
                 {
-                    Minibase.DiskManager.read_page(pageno, page);
-                } else if (skipRead == PIN_MEMCPY){
+                    // copy from memory
                     bufpool[victim].copyPage(page);
                 }
+                // if skipRead == PIN_DISKIO
+                else
+                {
+                    // read from disk
+                    Minibase.DiskManager.read_page(pageno, bufpool[victim]);
+                }
                 
-                fdesc.pincnt=1;
+                desc.pincnt = 1;
                 page.setPage(bufpool[victim]);
-                pagemap.put(pageno.getPID(), frametab[victim]);
-                fdesc.pageno.pid = pageno.pid;
-                
-                replacer.pinPage(fdesc);
-                
+                pagemap.put(pageno.pid, desc);
+                desc.pageno.pid = pageno.pid;
+                replacer.pinPage(desc);
             }
-	}
+ }
 
 	/**
          * @author Kasper Nissen

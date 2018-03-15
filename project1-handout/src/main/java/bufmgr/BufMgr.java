@@ -229,7 +229,9 @@ public class BufMgr implements GlobalConst {
          */
 	public void flushPage(PageId pageno) {
             FrameDesc fdesc = pagemap.get(pageno.pid);
-            
+            if (fdesc == null){
+                return;
+            }
             if (fdesc.dirty){
                 Minibase.DiskManager.write_page(pageno, bufpool[fdesc.index]);
                 fdesc.dirty=false;

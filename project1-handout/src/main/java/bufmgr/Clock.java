@@ -11,7 +11,7 @@ public class Clock extends Replacer{
          */
 	protected Clock(BufMgr bufmgr) {
 		super(bufmgr);
-		current = 0;
+		current = -1;
 	}
 
 	@Override
@@ -22,7 +22,8 @@ public class Clock extends Replacer{
 
 	@Override
 	public void freePage(FrameDesc fdesc) {
-		fdesc.state=0;
+            
+            fdesc.state=0;
 		
 	}
 

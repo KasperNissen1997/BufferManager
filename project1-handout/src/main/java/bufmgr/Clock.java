@@ -6,7 +6,7 @@ public class Clock extends Replacer{
         /**
          * 0 = available
          * 1 = pinned
-         * 2 = prepinned
+         * 2 = prevpinned
          * @param bufmgr 
          */
 	protected Clock(BufMgr bufmgr) {
@@ -43,13 +43,17 @@ public class Clock extends Replacer{
 
 	@Override
         /**
-         * Looks for a Frame which is elligable for replacement
-         * An elligable frame is a frame which has pincnt 0, but it will not be 
-         * replaced unless its state is also 0, if state is not 0, it is 
-         * decremented
-         * The algorithm uses count to see if an entire cycle of the frametab 
-         * has been looked through, and if it has it can be asumed that no 
-         * elligable frame is to be found 
+         * 
+         * @author sebastian
+         * 
+         * pickVictim tries to pick a frame which can be replaced.
+         * Loops through the frametable upto 2 times looking for a frame to be replaced.
+         * For each frame it reaches it checks if its state is available(0), in which the index is returned,
+         * or if the state is prevpinned(2), in which case it is set to available.
+         * If no index is found in two cycles through the frametable, it means
+         * that every frame is unavailable, and -1 is returned
+         * 
+         * 
          */
 	public int pickVictim() {
             int count = 0;

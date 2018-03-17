@@ -1,14 +1,17 @@
 package bufmgr;
-
+        /**
+         * The clock replacement policy looks at the frametable as a clock
+         * and loops through the indices evauluating them based on their state.
+         * 
+         * The state of an index can be one of the following 3
+         * 0 = available : the index can be replaced
+         * 1 = pinned : the index cannot be replaced
+         * 2 = prevpinned : should be set to available instead of being replaced when picked.
+         */
 public class Clock extends Replacer{
         
         private int current;
-        /**
-         * 0 = available
-         * 1 = pinned
-         * 2 = prevpinned
-         * @param bufmgr 
-         */
+
 	protected Clock(BufMgr bufmgr) {
 		super(bufmgr);
 		current = -1;

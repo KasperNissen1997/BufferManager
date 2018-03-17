@@ -52,21 +52,17 @@ public class Clock extends Replacer{
          * elligable frame is to be found 
          */
 	public int pickVictim() {
-            int i = 0;
-            int findvictim = 1;
-            while (findvictim == 1){
+            int count = 0;
+            while (count<frametab.length*2){
                 current = (current + 1) % frametab.length;
-                if (i>2*frametab.length){
-                    return -1;
-                }
-                if (frametab[current].state == 2)
+                
+                if (frametab[current].state == 0){
+                    return current;
+                } else if (frametab[current].state == 2) {
                     frametab[current].state = 0;
-                else if (frametab[current].state == 0){
-                    findvictim = 0;
                 }
-                i++;
+                count++;
             }
-            return current;
-	}
-
+            return -1;
+        }
 }

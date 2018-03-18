@@ -110,32 +110,32 @@ public class BufMgr implements GlobalConst {
             Minibase.DiskManager.deallocate_page(pageno);
 	}
 
-	/**
+/**
          * @author Kasper Nissen
          * 
-	 * Pins a disk page into the buffer pool. If the page is already pinned,
-	 * this simply increments the pin count. Otherwise, this selects another
-	 * page in the pool to replace, flushing the replaced page to disk if 
-	 * it is dirty.
-	 * 
-	 * (If one needs to copy the page from the memory instead of reading from 
-	 * the disk, one should set skipRead to PIN_MEMCPY. In this case, the page 
-	 * shouldn't be in the buffer pool. Throw an IllegalArgumentException if so. )
-	 * 
-	 * 
-	 * @param pageno
-	 *            identifies the page to pin
-	 * @param page
-	 *            if skipread == PIN_MEMCPY, works as as an input param, holding the contents to be read into the buffer pool
-	 *            if skipread == PIN_DISKIO, works as an output param, holding the contents of the pinned page read from the disk
-	 * @param skipRead
-	 *            PIN_MEMCPY(true) (copy the input page to the buffer pool); PIN_DISKIO(false) (read the page from disk)
-	 * @throws IllegalArgumentException
-	 *             if PIN_MEMCPY and the page is pinned
-	 * @throws IllegalStateException
-	 *             if all pages are pinned (i.e. pool exceeded)
-	 */
-	public void pinPage(PageId pageno, Page page, boolean skipRead) {
+  * Pins a disk page into the buffer pool. If the page is already pinned,
+  * this simply increments the pin count. Otherwise, this selects another
+  * page in the pool to replace, flushing the replaced page to disk if 
+  * it is dirty.
+  * 
+  * (If one needs to copy the page from the memory instead of reading from 
+  * the disk, one should set skipRead to PIN_MEMCPY. In this case, the page 
+  * shouldn't be in the buffer pool. Throw an IllegalArgumentException if so. )
+  * 
+  * 
+  * @param pageno
+  *            identifies the page to pin
+  * @param page
+  *            if skipread == PIN_MEMCPY, works as as an input param, holding the contents to be read into the buffer pool
+  *            if skipread == PIN_DISKIO, works as an output param, holding the contents of the pinned page read from the disk
+  * @param skipRead
+  *            PIN_MEMCPY(true) (copy the input page to the buffer pool); PIN_DISKIO(false) (read the page from disk)
+  * @throws IllegalArgumentException
+  *             if PIN_MEMCPY and the page is pinned
+  * @throws IllegalStateException
+  *             if all pages are pinned (i.e. pool exceeded)
+  */
+ public void pinPage(PageId pageno, Page page, boolean skipRead) {
             
             // attempt to retrieve the FrameDesc from the pagemap
             FrameDesc desc = pagemap.get(pageno.pid);
@@ -143,12 +143,9 @@ public class BufMgr implements GlobalConst {
             // if succesfull
             if (desc != null) 
             {
-                if (skipRead == PIN_MEMCPY)
-                    throw new IllegalArgumentException("invalid argument, birch");
-                
-                // pins the page
-                desc.pincnt++;
-                page.setPage(bufpool[desc.index]);
+                // increases the pincnt on the found page, 
+                // as well as ensuring the other necessary methods are called
+                pinPageFound(page, skipRead, desc);
                 replacer.pinPage(desc);
                 return;
             }
@@ -176,26 +173,43 @@ public class BufMgr implements GlobalConst {
                         Minibase.DiskManager.write_page(desc.pageno, bufpool[victim]);
                 }
                 
-                // if skipRead == PIN_MEMCPY
-                if (skipRead) 
-                {
-                    // copy from memory
-                    bufpool[victim].copyPage(page);
-                }
-                // if skipRead == PIN_DISKIO
-                else
-                {
-                    // read from disk
-                    Minibase.DiskManager.read_page(pageno, bufpool[victim]);
-                }
-                
-                desc.pincnt = 1;
-                page.setPage(bufpool[victim]);
-                pagemap.put(pageno.pid, desc);
-                desc.pageno.pid = pageno.pid;
+                pinPageSetup(pageno, page, skipRead, desc, victim);
                 replacer.pinPage(desc);
             }
  }
+        
+        // pins a page if one is found in pinPage
+        private void pinPageFound(Page page, boolean skipRead, FrameDesc desc)
+        {
+            if (skipRead == PIN_MEMCPY)
+                throw new IllegalArgumentException("invalid argument, birch");
+                
+            // pins the page
+            desc.pincnt++;
+            page.setPage(bufpool[desc.index]);
+        }
+        
+        // returns a new page according to the replacement policy in use
+        private void pinPageSetup(PageId pageno, Page page, boolean skipRead, FrameDesc desc, int victim)
+        {
+            // if skipRead == PIN_MEMCPY
+            if (skipRead) 
+            {
+                // copy from memory
+                bufpool[victim].copyPage(page);
+            }
+            // if skipRead == PIN_DISKIO
+            else
+            {
+                // read from disk
+                Minibase.DiskManager.read_page(pageno, bufpool[victim]);
+            }
+
+            desc.pincnt = 1;
+            page.setPage(bufpool[victim]);
+            pagemap.put(pageno.pid, desc);
+            desc.pageno.pid = pageno.pid;
+        }
 
 	/**
          * @author Kasper Nissen

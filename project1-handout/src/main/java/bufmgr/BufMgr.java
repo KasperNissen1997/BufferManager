@@ -85,6 +85,9 @@ public class BufMgr implements GlobalConst {
 	}
 
 	/**
+         * 
+         * @author Sebastian Larsen
+         * 
 	 * Deallocates a single page from disk, freeing it from the pool if needed.
 	 * Call Minibase.DiskManager.deallocate_page(pageno) to deallocate the page before return.
 	 * 
@@ -93,9 +96,6 @@ public class BufMgr implements GlobalConst {
 	 * @throws IllegalArgumentException
 	 *             if the page is pinned
 	 */
-        /*
-         * @Author Sebastian
-         */
 	public void freePage(PageId pageno) throws IllegalArgumentException {
             FrameDesc fdesc = pagemap.get(pageno.pid);
             if( fdesc != null){
@@ -246,15 +246,16 @@ public class BufMgr implements GlobalConst {
 	}
 
 	/**
+         * 
+         * @author Sebastian Larsen
+         * 
 	 * Immediately writes a page in the buffer pool to disk, if dirty.
 	 *
-         * @Author Sebastian
          */
 	public void flushPage(PageId pageno) {
+
             FrameDesc fdesc = pagemap.get(pageno.pid);
-            if (fdesc == null){
-                return;
-            }
+
             if (fdesc.dirty){
                 Minibase.DiskManager.write_page(pageno, bufpool[fdesc.index]);
                 fdesc.dirty=false;
@@ -262,14 +263,17 @@ public class BufMgr implements GlobalConst {
 	}
 
 	/**
-	 * Immediately writes all dirty pages in the buffer pool to disk.
+         * 
+         * @author Sebastian Larsen
+         * 
+	 * Immediately writes all dirty pages in the buffer pool to disk,
+         * skipping the pages which have INVALID_PAGEID
 	 */
-        /*
-         * @Author Sebastian
-         */
 	public void flushAllPages() {
             for(int i = 0; i < frametab.length; i++){
-                flushPage(frametab[i].pageno);
+                if (frametab[i].pageno.pid != INVALID_PAGEID){
+                    flushPage(frametab[i].pageno);
+                }
             }
 	}
 

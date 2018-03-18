@@ -178,7 +178,21 @@ public class BufMgr implements GlobalConst {
             }
  }
         
-        // pins a page if one is found in pinPage
+/**
+         * @author Kasper Nissen
+         * 
+         * If a page already in the pagemap is to be pinned, this method will be
+         * called. It ensures that the pincnt is incremented and that the 
+         * correct replacer flags are set.
+         * 
+         * @param page
+  *            if skipread == PIN_MEMCPY, works as as an input param, holding the contents to be read into the buffer pool
+  *            if skipread == PIN_DISKIO, works as an output param, holding the contents of the pinned page read from the disk
+  * @param skipRead
+  *            PIN_MEMCPY(true) (copy the input page to the buffer pool); PIN_DISKIO(false) (read the page from disk)
+         * @param desc 
+         *            the FrameDesc object that holds the FrameDesc tied to the page found
+         */
         private void pinPageFound(Page page, boolean skipRead, FrameDesc desc)
         {
             if (skipRead == PIN_MEMCPY)
@@ -189,7 +203,25 @@ public class BufMgr implements GlobalConst {
             page.setPage(bufpool[desc.index]);
         }
         
-        // returns a new page according to the replacement policy in use
+        /**
+         * @author Kasper Nissen
+         * 
+         * ** used in pinPage **
+         * ensures that page is initialized with the right data, according to 
+         * the value of skipRead.
+         * 
+         * @param pageno
+  *            identifies the page to pin
+  * @param page
+  *            if skipread == PIN_MEMCPY, works as as an input param, holding the contents to be read into the buffer pool
+  *            if skipread == PIN_DISKIO, works as an output param, holding the contents of the pinned page read from the disk
+  * @param skipRead
+  *            PIN_MEMCPY(true) (copy the input page to the buffer pool); PIN_DISKIO(false) (read the page from disk)
+         * @param desc
+         *            the FrameDesc object that holds the FrameDesc tied to the page found
+         * @param victim
+         *            the page to be replaced, determined by the replacement policy in use
+         */
         private void pinPageSetup(PageId pageno, Page page, boolean skipRead, FrameDesc desc, int victim)
         {
             // if skipRead == PIN_MEMCPY
@@ -287,11 +319,11 @@ public class BufMgr implements GlobalConst {
 	}
 
 	/**
+         * 
+         * @author Sebastian Larsen
+         * 
 	 * Gets the total number of unpinned buffer frames.
 	 */
-        /*
-         * @Author Sebastian
-         */
 	public int getNumUnpinned() {
             int unpin_count = 0;
             for (int i = 0; i < frametab.length; i++){

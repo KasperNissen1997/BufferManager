@@ -1,5 +1,8 @@
 package bufmgr;
         /**
+         * 
+         * @author Sebastian Larsen
+         * 
          * The clock replacement policy looks at the frametable as a clock
          * and loops through the indices evauluating them based on their state.
          * 
@@ -46,8 +49,6 @@ public class Clock extends Replacer{
 
 	@Override
         /**
-         * 
-         * @author sebastian
          * 
          * pickVictim tries to pick a frame which can be replaced.
          * Loops through the frametable upto 2 times looking for a frame to be replaced.
